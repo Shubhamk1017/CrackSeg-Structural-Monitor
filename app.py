@@ -77,8 +77,9 @@ async def predict(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents)).convert('RGB')
         img_np = np.array(image)
         
-        # --- PRE-PROCESS: Scale down huge images to max 1024px to prevent OOM ---
-        max_dim = 1024
+        # --- PRE-PROCESS: Scale down for Cloud (Render Free Tier 0.1 CPU limit) ---
+        # A smaller max_dim (512) prevents the cloud server from taking 3+ minutes to process patches
+        max_dim = 512
         h, w = img_np.shape[:2]
         if max(h, w) > max_dim:
             scale = max_dim / max(h, w)
@@ -90,6 +91,9 @@ async def predict(file: UploadFile = File(...)):
         h_orig, w_orig = img_process.shape[:2]
         
         # --- PATCH-BASED INFERENCE (Native Resolution) ---
+        # Force PyTorch to use 1 thread to prevent extreme CPU thrashing on Render
+        torch.set_num_threads(1)
+        
         # 1. Pad image so dimensions are multiples of IMG_SIZE
         pad_h = (IMG_SIZE - (h_orig % IMG_SIZE)) % IMG_SIZE
         pad_w = (IMG_SIZE - (w_orig % IMG_SIZE)) % IMG_SIZE
