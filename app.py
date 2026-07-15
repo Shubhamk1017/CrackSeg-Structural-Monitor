@@ -38,6 +38,20 @@ def load_model():
     global model
     print(f"Loading model on {DEVICE}...")
     model = UNet(in_channels=3, out_channels=1).to(DEVICE)
+    
+    # Reassemble model if it was split for GitHub upload
+    if not os.path.exists(MODEL_PATH):
+        print("Model file not found. Checking for split parts...")
+        part_num = 0
+        if os.path.exists(f"{MODEL_PATH}.part{part_num}"):
+            print("Reassembling model from parts...")
+            with open(MODEL_PATH, 'wb') as outfile:
+                while os.path.exists(f"{MODEL_PATH}.part{part_num}"):
+                    with open(f"{MODEL_PATH}.part{part_num}", 'rb') as infile:
+                        outfile.write(infile.read())
+                    part_num += 1
+            print(f"Successfully reassembled {MODEL_PATH} from {part_num} parts.")
+    
     if os.path.exists(MODEL_PATH):
         model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
         model.eval()
