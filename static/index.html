@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrackSeg | AI Structural Health Monitor</title>
+    <meta name="description" content="AI-powered concrete crack detection and structural health assessment using deep learning U-Net architecture.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+    <!-- Ambient Background Particles -->
+    <div class="ambient-bg">
+        <div class="particle" style="--x: 10%; --y: 20%; --dur: 15s; --size: 300px;"></div>
+        <div class="particle" style="--x: 80%; --y: 70%; --dur: 20s; --size: 400px;"></div>
+        <div class="particle" style="--x: 50%; --y: 10%; --dur: 18s; --size: 250px;"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar glass-panel">
+            <div class="logo">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>CrackSeg</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Predict</span></a></li>
+                <li><a href="#" id="nav-about"><i class="fa-solid fa-circle-info"></i> <span>About</span></a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="tech-badge"><i class="fa-solid fa-microchip"></i> PyTorch + U-Net</div>
+                <div class="user-profile">
+                    <div class="avatar">SK</div>
+                    <div class="info">
+                        <span class="name">Shubham Kumar</span>
+                        <span class="role">IIT Bombay • SoS 2026</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-text">
+                    <h1>AI Crack Detection</h1>
+                    <p>Upload concrete surface images for instant structural health assessment using our multi-factor analysis engine.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-icon" id="download-btn" title="Download Report" disabled>
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <!-- Upload Section -->
+                <div class="upload-section glass-panel">
+                    <div class="section-header">
+                        <h2><i class="fa-solid fa-cloud-arrow-up"></i> Upload Image</h2>
+                    </div>
+
+                    <div class="upload-area" id="drop-zone">
+                        <input type="file" id="file-input" accept="image/png, image/jpeg, image/jpg" hidden>
+                        <div class="upload-content" id="upload-content">
+                            <i class="fa-regular fa-image upload-icon"></i>
+                            <h3>Drag & Drop your image here</h3>
+                            <p>or click to browse from your computer</p>
+                            <span class="support-text">Supports: JPG, JPEG, PNG</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-container hidden" id="preview-container">
+                        <img id="image-preview" src="" alt="Preview">
+                        <button class="btn btn-chip" id="remove-btn"><i class="fa-solid fa-xmark"></i> Remove</button>
+                    </div>
+
+                    <button class="btn btn-primary" id="analyze-btn" disabled>
+                        <span>Analyze Image</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section glass-panel">
+                    <div class="section-header">
+                        <h2><i class="fa-solid fa-microscope"></i> Analysis Results</h2>
+                        <span class="status-badge" id="status-badge">Waiting</span>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="loading-state hidden" id="loading-state">
+                        <div class="loader-ring">
+                            <div class="ring"></div>
+                            <i class="fa-solid fa-brain loader-icon"></i>
+                        </div>
+                        <p>Running U-Net Inference...</p>
+                        <span class="loading-subtext">Segmenting cracks at pixel-level precision</span>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="empty-state">
+                        <div class="empty-visual">
+                            <div class="pulse-ring"></div>
+                            <i class="fa-solid fa-robot empty-icon"></i>
+                        </div>
+                        <p>Upload an image to see AI predictions</p>
+                    </div>
+
+                    <!-- Results State -->
+                    <div class="results-display hidden" id="results-display">
+                        <!-- Tabs -->
+                        <div class="result-tabs">
+                            <button class="tab active" data-target="overlay-view"><i class="fa-solid fa-layer-group"></i> Overlay</button>
+                            <button class="tab" data-target="mask-view"><i class="fa-solid fa-chess-board"></i> Mask</button>
+                            <button class="tab" data-target="heatmap-view"><i class="fa-solid fa-temperature-high"></i> Heatmap</button>
+                            <button class="tab" data-target="original-view"><i class="fa-regular fa-image"></i> Original</button>
+                        </div>
+
+                        <!-- Image Views -->
+                        <div class="result-images">
+                            <div class="result-view active" id="overlay-view">
+                                <img id="result-overlay" src="" alt="Overlay">
+                            </div>
+                            <div class="result-view" id="mask-view">
+                                <img id="result-mask" src="" alt="Mask">
+                            </div>
+                            <div class="result-view" id="heatmap-view">
+                                <img id="result-heatmap" src="" alt="Heatmap">
+                            </div>
+                            <div class="result-view" id="original-view">
+                                <img id="result-original" src="" alt="Original">
+                            </div>
+                        </div>
+
+                        <!-- Integrity Gauge + Stats -->
+                        <div class="analysis-dashboard">
+                            <!-- Circular Gauge -->
+                            <div class="gauge-container" id="gauge-container">
+                                <svg class="gauge-svg" viewBox="0 0 120 120">
+                                    <circle class="gauge-track" cx="60" cy="60" r="52" />
+                                    <circle class="gauge-fill" id="gauge-fill" cx="60" cy="60" r="52" />
+                                </svg>
+                                <div class="gauge-text">
+                                    <span class="gauge-value" id="gauge-value">--</span>
+                                    <span class="gauge-label">Integrity</span>
+                                </div>
+                            </div>
+
+                            <!-- Stats Grid -->
+                            <div class="stats-grid">
+                                <div class="stat-card" style="--delay: 0">
+                                    <i class="fa-solid fa-expand stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Resolution</span>
+                                        <span class="stat-value" id="stat-resolution">--</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="--delay: 1">
+                                    <i class="fa-solid fa-bullseye stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Confidence</span>
+                                        <span class="stat-value" id="stat-confidence">--</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="--delay: 2">
+                                    <i class="fa-solid fa-hashtag stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Cracks Found</span>
+                                        <span class="stat-value" id="stat-num-cracks">--</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="--delay: 3">
+                                    <i class="fa-solid fa-ruler stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Max Length</span>
+                                        <span class="stat-value" id="stat-max-length">--</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="--delay: 4">
+                                    <i class="fa-solid fa-arrows-left-right stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Avg Width</span>
+                                        <span class="stat-value" id="stat-avg-width">--</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card" style="--delay: 5">
+                                    <i class="fa-solid fa-percent stat-icon"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Crack Area</span>
+                                        <span class="stat-value" id="stat-crack-ratio">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Status Banner -->
+                        <div class="health-banner" id="health-banner">
+                            <div class="health-icon-wrap" id="health-icon-wrap">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="health-info">
+                                <span class="health-label">Structural Health Assessment</span>
+                                <span class="health-status" id="stat-health">--</span>
+                            </div>
+                            <div class="health-score" id="health-score-text">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay hidden" id="about-modal">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-circle-info"></i> About CrackSeg</h2>
+                <button class="btn btn-icon" id="close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>CrackSeg is an AI tool built to check the structural health of concrete surfaces. It uses a custom deep learning model (U-Net) to find and highlight cracks down to the exact pixel.</p>
+                <h3>How it scores damage</h3>
+                <p>Instead of just measuring the total size of the cracks, the app calculates a Structural Integrity Score by looking at 5 things that actually matter for structural health:</p>
+                <ul>
+                    <li><strong>Area:</strong> How much of the surface is covered?</li>
+                    <li><strong>Count:</strong> How many separate cracks are there?</li>
+                    <li><strong>Length:</strong> How far does the longest crack stretch?</li>
+                    <li><strong>Width:</strong> How wide are the cracks on average?</li>
+                    <li><strong>Branching:</strong> Do the cracks intersect into a dangerous web?</li>
+                </ul>
+                <h3>Built with</h3>
+                <p>PyTorch • FastAPI • OpenCV • Vanilla JS</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=4"></script>
+</body>
+</html>
